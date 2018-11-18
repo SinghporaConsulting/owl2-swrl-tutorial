@@ -1,26 +1,51 @@
 package cz.makub;
 
-import com.clarkparsia.owlapi.explanation.DefaultExplanationGenerator;
-import com.clarkparsia.owlapi.explanation.util.SilentExplanationProgressMonitor;
-import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
-import com.google.common.collect.Multimap;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.dlsyntax.renderer.DLSyntaxObjectRenderer;
 import org.semanticweb.owlapi.formats.PrefixDocumentFormat;
 import org.semanticweb.owlapi.io.OWLObjectRenderer;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLAnnotation;
+import org.semanticweb.owlapi.model.OWLAxiom;
+import org.semanticweb.owlapi.model.OWLClass;
+import org.semanticweb.owlapi.model.OWLClassAssertionAxiom;
+import org.semanticweb.owlapi.model.OWLClassExpression;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLIndividual;
+import org.semanticweb.owlapi.model.OWLLiteral;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLObjectProperty;
+import org.semanticweb.owlapi.model.OWLObjectPropertyExpression;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.parameters.Imports;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.semanticweb.owlapi.reasoner.SimpleConfiguration;
 import org.semanticweb.owlapi.search.EntitySearcher;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
+
+import com.clarkparsia.owlapi.explanation.DefaultExplanationGenerator;
+import com.clarkparsia.owlapi.explanation.util.SilentExplanationProgressMonitor;
+import com.google.common.collect.Multimap;
+
+import openllet.owlapi.OpenlletReasonerFactory;
 import uk.ac.manchester.cs.owl.explanation.ordering.ExplanationOrderer;
 import uk.ac.manchester.cs.owl.explanation.ordering.ExplanationOrdererImpl;
 import uk.ac.manchester.cs.owl.explanation.ordering.ExplanationTree;
 import uk.ac.manchester.cs.owl.explanation.ordering.Tree;
-
-import java.util.*;
 
 /**
  * Example how to use an OWL ontology with a reasoner.
@@ -32,6 +57,7 @@ import java.util.*;
 public class Tutorial {
 
     private static final String BASE_URL = "http://acrab.ics.muni.cz/ontologies/tutorial.owl";
+    //sha1sum: 6904b7ad1736d9789e30558372e0da53fb9069cd
     private static OWLObjectRenderer renderer = new DLSyntaxObjectRenderer();
 
     public static void main(String[] args) throws OWLOntologyCreationException {
@@ -39,10 +65,10 @@ public class Tutorial {
         //prepare ontology and reasoner
         OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
         OWLOntology ontology = manager.loadOntologyFromOntologyDocument(IRI.create(BASE_URL));
-        OWLReasonerFactory reasonerFactory = PelletReasonerFactory.getInstance();
+        OWLReasonerFactory reasonerFactory = OpenlletReasonerFactory.getInstance();
         OWLReasoner reasoner = reasonerFactory.createReasoner(ontology, new SimpleConfiguration());
         OWLDataFactory factory = manager.getOWLDataFactory();
-        PrefixDocumentFormat pm = manager.getOntologyFormat(ontology).asPrefixOWLOntologyFormat();
+        PrefixDocumentFormat pm = manager.getOntologyFormat(ontology).asPrefixOWLDocumentFormat();
         pm.setDefaultPrefix(BASE_URL + "#");
 
         //get class and its individuals
@@ -82,7 +108,7 @@ public class Tutorial {
         }
 
         //find to which classes the individual belongs
-        Collection<OWLClassExpression> assertedClasses = EntitySearcher.getTypes(martin, ontology);
+        Collection<OWLClassExpression> assertedClasses = EntitySearcher.getTypes(martin, ontology).collect(Collectors.toList());
         for (OWLClass c : reasoner.getTypes(martin, false).getFlattened()) {
             boolean asserted = assertedClasses.contains(c);
             System.out.println((asserted ? "asserted" : "inferred") + " class for Martin: " + renderer.render(c));
@@ -177,6 +203,14 @@ public class Tutorial {
 
         public String getAnnotationString(OWLNamedIndividual ind, IRI annotationIRI) {
             return getLocalizedString(EntitySearcher.getAnnotations(ind, ontology, factory.getOWLAnnotationProperty(annotationIRI)));
+        }
+        /**
+         * method added in v2.0.0 as EntitySearch.getAnnotations in openllet returns Stream
+         * @param annotations
+         * @return
+         */
+        private String getLocalizedString(Stream<OWLAnnotation> annotations) {
+        	return getLocalizedString(annotations.collect(Collectors.toList()) );
         }
 
         private String getLocalizedString(Collection<OWLAnnotation> annotations) {

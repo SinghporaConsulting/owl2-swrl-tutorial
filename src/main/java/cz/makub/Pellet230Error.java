@@ -1,7 +1,6 @@
 package cz.makub;
 
-import com.clarkparsia.pellet.owlapiv3.PelletReasoner;
-import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
+import openllet.owlapi.OpenlletReasonerFactory;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.reasoner.NodeSet;
@@ -13,11 +12,11 @@ import org.semanticweb.owlapi.util.Version;
 public class Pellet230Error {
 
     private static final String BASE_URL = "http://acrab.ics.muni.cz/ontologies/pellet230err.owl";
-
+    //sha1sum: a63c98d3fdc75dad2328e247b6462c8b890a253f
     public static void main(String[] args) throws OWLOntologyCreationException {
         OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
         OWLOntology ontology = manager.loadOntologyFromOntologyDocument(IRI.create(BASE_URL));
-        OWLReasonerFactory reasonerFactory = PelletReasonerFactory.getInstance();
+        OWLReasonerFactory reasonerFactory = OpenlletReasonerFactory.getInstance();
 
         OWLReasoner reasoner = reasonerFactory.createReasoner(ontology, new SimpleConfiguration());
         Version v = reasoner.getReasonerVersion();

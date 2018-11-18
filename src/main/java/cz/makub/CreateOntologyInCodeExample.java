@@ -1,6 +1,5 @@
 package cz.makub;
 
-import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.dlsyntax.renderer.DLSyntaxObjectRenderer;
 import org.semanticweb.owlapi.formats.FunctionalSyntaxDocumentFormat;
@@ -11,6 +10,8 @@ import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.semanticweb.owlapi.reasoner.SimpleConfiguration;
 import org.semanticweb.owlapi.util.DefaultPrefixManager;
 import org.semanticweb.owlapi.vocab.OWLRDFVocabulary;
+
+import openllet.owlapi.OpenlletReasonerFactory;
 
 import java.io.File;
 import java.util.Collections;
@@ -23,8 +24,8 @@ import java.util.Set;
  * @author Martin Kuba makub@ics.muni.cz
  */
 public class CreateOntologyInCodeExample {
-
-    private static final String DOCUMENT_IRI = "http://acrab.ics.muni.cz/ontologies/example.owl";
+	private static final String DOCUMENT_IRI = "http://acrab.ics.muni.cz/ontologies/example.owl";
+	//sha1sum: 81ca1f7d25d07dbd061c4bae6e00fed9b770c080
     private static OWLObjectRenderer renderer = new DLSyntaxObjectRenderer();
 
     public static void main(String[] args) throws OWLOntologyCreationException, OWLOntologyStorageException {
@@ -95,7 +96,7 @@ public class CreateOntologyInCodeExample {
         manager.saveOntology(ontology, ontologyFormat, IRI.create(new File("example.owl").toURI()));
 
         //reason
-        OWLReasonerFactory reasonerFactory = PelletReasonerFactory.getInstance();
+        OWLReasonerFactory reasonerFactory = OpenlletReasonerFactory.getInstance();
         OWLReasoner reasoner = reasonerFactory.createReasoner(ontology, new SimpleConfiguration());
         for (OWLNamedIndividual person : reasoner.getInstances(personClass, false).getFlattened()) {
             System.out.println("person : " + renderer.render(person));

@@ -1,15 +1,15 @@
 package cz.makub.swrl;
 
-import com.clarkparsia.pellet.rules.BindingHelper;
-import com.clarkparsia.pellet.rules.VariableBinding;
-import com.clarkparsia.pellet.rules.VariableUtils;
-import com.clarkparsia.pellet.rules.builtins.BuiltIn;
-import com.clarkparsia.pellet.rules.model.*;
-import org.mindswap.pellet.ABox;
-import org.mindswap.pellet.Individual;
-import org.mindswap.pellet.Literal;
-import org.mindswap.pellet.Node;
-import org.mindswap.pellet.exceptions.InternalReasonerException;
+import openllet.core.boxes.abox.ABox;
+import openllet.core.boxes.abox.Individual;
+import openllet.core.boxes.abox.Literal;
+import openllet.core.boxes.abox.Node;
+import openllet.core.exceptions.InternalReasonerException;
+import openllet.core.rules.BindingHelper;
+import openllet.core.rules.VariableBinding;
+import openllet.core.rules.VariableUtils;
+import openllet.core.rules.builtins.BuiltIn;
+import openllet.core.rules.model.*;
 
 import java.util.*;
 
@@ -33,7 +33,7 @@ public class CustomSWRLBuiltin implements BuiltIn {
          * @param args array of Individual or Literal
          * @return true on success, false otherwise
          */
-        public boolean apply(ABox abox, Node[] args);
+        public boolean apply(openllet.core.boxes.abox.ABox abox, Node[] args);
 
         public boolean isApplicable(boolean[] boundPositions);
 
@@ -193,6 +193,12 @@ public class CustomSWRLBuiltin implements BuiltIn {
             }
         }
     }
+
+	@Override
+	public boolean apply(ABox abox, Literal[] args) {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 
 

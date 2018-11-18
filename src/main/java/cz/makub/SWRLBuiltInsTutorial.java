@@ -1,29 +1,38 @@
 package cz.makub;
 
-import com.clarkparsia.pellet.owlapiv3.PelletReasonerFactory;
-import com.clarkparsia.pellet.rules.builtins.BuiltInRegistry;
-import com.clarkparsia.pellet.rules.builtins.GeneralFunction;
-import com.clarkparsia.pellet.rules.builtins.GeneralFunctionBuiltIn;
-import com.google.common.collect.Multimap;
-import org.mindswap.pellet.ABox;
-import org.mindswap.pellet.Literal;
-import org.mindswap.pellet.utils.ATermUtils;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Collection;
+
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.dlsyntax.renderer.DLSyntaxObjectRenderer;
 import org.semanticweb.owlapi.formats.PrefixDocumentFormat;
 import org.semanticweb.owlapi.io.OWLObjectRenderer;
-import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.model.IRI;
+import org.semanticweb.owlapi.model.OWLDataFactory;
+import org.semanticweb.owlapi.model.OWLDataProperty;
+import org.semanticweb.owlapi.model.OWLDataPropertyExpression;
+import org.semanticweb.owlapi.model.OWLLiteral;
+import org.semanticweb.owlapi.model.OWLNamedIndividual;
+import org.semanticweb.owlapi.model.OWLOntology;
+import org.semanticweb.owlapi.model.OWLOntologyCreationException;
+import org.semanticweb.owlapi.model.OWLOntologyManager;
 import org.semanticweb.owlapi.model.parameters.Imports;
 import org.semanticweb.owlapi.reasoner.OWLReasoner;
 import org.semanticweb.owlapi.reasoner.OWLReasonerFactory;
 import org.semanticweb.owlapi.reasoner.SimpleConfiguration;
 import org.semanticweb.owlapi.search.EntitySearcher;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Collection;
+import com.google.common.collect.Multimap;
 
-import static org.mindswap.pellet.utils.Namespaces.XSD;
+import openllet.aterm.ATermAppl;
+import openllet.core.boxes.abox.ABox;
+import openllet.core.boxes.abox.Literal;
+import openllet.core.rules.builtins.BuiltInRegistry;
+import openllet.core.rules.builtins.GeneralFunction;
+import openllet.core.rules.builtins.GeneralFunctionBuiltIn;
+import openllet.core.utils.TermFactory;
+import openllet.owlapi.OpenlletReasonerFactory;
 
 /**
  * Example of Pellet custom SWRL built-in.
@@ -33,9 +42,12 @@ import static org.mindswap.pellet.utils.Namespaces.XSD;
  * @author Martin Kuba makub@ics.muni.cz
  */
 public class SWRLBuiltInsTutorial {
-
+	openllet.core.rules.builtins.NumericOperators x;
+	openllet.core.rules.builtins.NumericAdapter y;
     /**
-     * Implementation of a SWRL custom built-in.
+     * Implementation of ThisYear SWRL custom built-in.
+     * (Incorporated from: https://github.com/martin-kuba/owl2-swrl-tutorial
+     *   under licence as of 26-10-2018) 
      */
     private static class ThisYear implements GeneralFunction {
 
@@ -44,8 +56,9 @@ public class SWRLBuiltInsTutorial {
             String year = new SimpleDateFormat("yyyy").format(calendar.getTime());
             if (args[0] == null) {
                 //variable not bound, fill it with the current year
-                args[0] = abox.addLiteral(ATermUtils.makeTypedLiteral(year, XSD + "integer"));
-                return args[0] != null;
+        		ATermAppl term = TermFactory.literal(Integer.parseInt(year));
+            	args[0] = abox.addLiteral(term);
+            	return args[0] != null;
             } else {
                 //variable is bound, compare its value with the current year
                 return year.equals(args[0].getLexicalValue());
@@ -60,17 +73,17 @@ public class SWRLBuiltInsTutorial {
     }
 
     private static final String DOC_URL = "http://acrab.ics.muni.cz/ontologies/swrl_tutorial.owl";
-
+ 
     public static void main(String[] args) throws OWLOntologyCreationException {
         //register my built-in
         BuiltInRegistry.instance.registerBuiltIn("urn:makub:builtIn#thisYear", new GeneralFunctionBuiltIn(new ThisYear()));
         //initialize ontology and reasoner
         OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
         OWLOntology ontology = manager.loadOntologyFromOntologyDocument(IRI.create(DOC_URL));
-        OWLReasonerFactory reasonerFactory = PelletReasonerFactory.getInstance();
+        OWLReasonerFactory reasonerFactory = OpenlletReasonerFactory.getInstance();
         OWLReasoner reasoner = reasonerFactory.createReasoner(ontology, new SimpleConfiguration());
         OWLDataFactory factory = manager.getOWLDataFactory();
-        PrefixDocumentFormat pm = manager.getOntologyFormat(ontology).asPrefixOWLOntologyFormat();
+        PrefixDocumentFormat pm = manager.getOntologyFormat(ontology).asPrefixOWLDocumentFormat();
         //use the rule with the built-in to infer data property values
         OWLNamedIndividual martin = factory.getOWLNamedIndividual(":Martin", pm);
         listAllDataPropertyValues(martin, ontology, reasoner);

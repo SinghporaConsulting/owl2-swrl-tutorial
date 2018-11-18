@@ -7,6 +7,8 @@
     </appender>
 
     <logger name="cz.makub" level="debug"/>
+    <logger name="openllet.*" level="warn"/>   
+    <logger name="org.semanticweb.*" level="warn"/> 
     <logger name="org.semanticweb.owlapi.util.SAXParsers" level="error"/>
     <logger name="com.clarkparsia.owlapi.explanation.BlackBoxExplanation" level="warn"/>
 
